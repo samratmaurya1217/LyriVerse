@@ -1,0 +1,26 @@
+{
+  "name": "lyriverse",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server/index.js & vite",
+    "dev:frontend": "vite",
+    "dev:backend": "node server/index.js",
+    "build": "vite build",
+    "preview": "vite preview",
+    "setup": "node server/getRefreshToken.js",
+    "start": "node server/index.js"
+  },
+  "devDependencies": {
+    "vite": "^8.2.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "fast-average-color": "^9.5.2",
+    "three": "^0.185.1",
+    "troika-three-text": "^0.52.5"
+  }
+}
