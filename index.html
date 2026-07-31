@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LyriVerse — Immersive 3D Lyrics Visualizer</title>
+    <meta name="description" content="Search any song, play it, and watch perfectly-synced lyrics float in a stunning 3D environment with particles, glow effects, and cinematic visuals." />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+
+  <body>
+    <!-- ═══════════════ LOADING SCREEN ═══════════════ -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-content">
+        <div class="loading-logo">🎵</div>
+        <h1 class="loading-title">LyriVerse</h1>
+        <p class="loading-subtitle">Immersive Lyrics Experience</p>
+        <div class="loading-bar">
+          <div class="loading-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ THREE.JS CANVAS CONTAINER ═══════════════ -->
+    <div id="canvas-container"></div>
+
+    <!-- ═══════════════ SEARCH OVERLAY ═══════════════ -->
+    <div id="search-overlay" class="search-overlay visible">
+      <div class="search-wrapper">
+        <h1 class="app-title">
+          <span class="title-icon">🎵</span>
+          <span class="title-text">LyriVerse</span>
+        </h1>
+        <p class="app-subtitle">Search any song. Feel every lyric.</p>
+
+        <div class="search-box" id="search-box">
+          <div class="search-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+          <input
+            type="text"
+            id="search-input"
+            class="search-input"
+            placeholder="Try 'Tere Liye Atif Aslam' or 'Shape of You'..."
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <div class="search-spinner" id="search-spinner"></div>
+        </div>
+
+        <div class="search-results" id="search-results"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ LYRICS DISPLAY (2D Fallback / Overlay) ═══════════════ -->
+    <div id="lyrics-overlay" style="display: none;">
+      <div id="lyrics-previous" class="lyrics-line past"></div>
+      <div class="lyrics-line current" id="lyrics-current"></div>
+      <div class="lyrics-line upcoming" id="lyrics-upcoming"></div>
+    </div>
+
+    <!-- ═══════════════ PLAYER CONTROLS ═══════════════ -->
+    <div id="player-controls" class="player-controls hidden">
+      <!-- Song Info -->
+      <div class="player-info">
+        <div class="player-song-title" id="player-song-title">—</div>
+        <div class="player-artist" id="player-artist">—</div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="player-progress-wrapper">
+        <span class="player-time" id="player-time-current">0:00</span>
+        <div class="player-progress" id="player-progress">
+          <div class="player-progress-fill" id="player-progress-fill"></div>
+          <div class="player-progress-handle" id="player-progress-handle"></div>
+        </div>
+        <span class="player-time" id="player-time-total">0:00</span>
+      </div>
+
+      <!-- Control Buttons -->
+      <div class="player-buttons">
+        <button class="player-btn" id="btn-back" title="Back to search (Esc)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+
+        <button class="player-btn" id="btn-theme" title="Change theme (T)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </button>
+
+        <button class="player-btn player-btn-main" id="btn-play-pause" title="Play / Pause (Space)">
+          <svg class="icon-play" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"></polygon></svg>
+          <svg class="icon-pause hidden" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+        </button>
+
+        <button class="player-btn" id="btn-mode" title="Animation mode (M)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </button>
+
+        <button class="player-btn" id="btn-volume" title="Volume">
+          <svg class="icon-vol-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"></polygon><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+          <svg class="icon-vol-off hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"></polygon><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+        </button>
+
+        <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="80" />
+
+        <button class="player-btn" id="btn-fullscreen" title="Fullscreen (F)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,3 21,3 21,9"/><polyline points="9,21 3,21 3,15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        </button>
+      </div>
+
+      <!-- Sync Offset -->
+      <div class="sync-offset" id="sync-offset">
+        <button class="sync-btn" id="btn-sync-minus" title="Lyrics earlier (-)">−</button>
+        <span class="sync-value" id="sync-value">0.0s</span>
+        <button class="sync-btn" id="btn-sync-plus" title="Lyrics later (+)">+</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════ NOTIFICATION TOAST ═══════════════ -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Spotify Web Playback SDK handles audio — no hidden player needed -->
+    <!-- ═══════════════ APP ENTRY ═══════════════ -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
